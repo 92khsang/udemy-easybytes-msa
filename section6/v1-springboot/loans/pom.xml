@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.eazybytes</groupId>
-	<artifactId>cards</artifactId>
+	<artifactId>loans</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>cards</name>
+	<name>loans</name>
 	<description>microservice for loans</description>
 	<url/>
 	<licenses>
@@ -84,7 +84,7 @@
 				<version>3.4.3</version>
 				<configuration>
 					<to>
-						<image>92khsang/${project.artifactId}:s4</image>
+						<image>92khsang/${project.artifactId}:s6</image>
 					</to>
 				</configuration>
 			</plugin>
