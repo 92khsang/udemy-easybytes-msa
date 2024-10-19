@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: "configserver"
+  profiles:
+    active: "git"
+    #active: native
+  cloud:
+    config:
+      server:
+        git:
+          uri: "https://github.com/92khsang/udemy-easybytes-msa-config.git"
+          default-label: "main"
+          timeout: 5
+          clone-on-start: true
+          force-pull: true
+        #native:
+          #search-locations: "classpath:/config"
+          #search-locations: "file:///home//hayes//Documents//udemy//master-msa//section6-config"
+  rabbitmq:
+    host: "localhost"
+    port: 5672
+    username: "guest"
+    password: "guest"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+encrypt:
+  key: "8ZQchSK*9PvK9?FhkCdvcz#q)Kcte(T5"
+
+server:
+  port: 8071
