@@ -30,7 +30,7 @@ services:
       retries: 10
       start_period: 10s
     env_file:
-      - ~/keys/udemy-udemy-easybytes-msa-config.env
+      - ~/keys/udemy-easybytes-msa-config.env
     extends:
       file: common-config.yml
       service: microservice-base-config
