@@ -1,0 +1,139 @@
+x-network-settings: &network-settings
+  networks:
+    - eazybank
+
+x-eazybank-default-settings: &eazybank-default-settings
+  <<: *network-settings
+  deploy:
+    resources:
+      limits:
+        memory: 700m
+
+x-eazybank-otel-settings: &eazybank-otel-settings
+  JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-2.9.0.jar"
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://tempo:4318/v1/traces
+  OTEL_METRICS_EXPORTER: none
+  OTEL_LOGS_EXPORTER: none
+
+x-eazybank-microservices-settings: &eazybank-microservices-settings
+  <<: *eazybank-default-settings
+  depends_on:
+    eurekaserver:
+      condition: service_healthy
+
+x-eazybank-default-healthcheck-settings: &eazybank-default-healthcheck-settings
+  interval: 10s
+  timeout: 5s
+  retries: 10
+  start_period: 10s
+
+x-eazybank-configserver-dependency-env: &configserver-dependency-env
+  <<: *eazybank-otel-settings
+  SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
+  SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+
+x-eazybank-eurekaserver-dependency-env: &eurekaserver-dependency-env
+  <<: *configserver-dependency-env
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+
+# Services Definition
+services:
+  configserver:
+    image: "92khsang/configserver:${TAG_NAME}"
+    container_name: configserver-ms
+    ports:
+      - "8071:8071"
+    environment:
+      <<: *eazybank-otel-settings
+      SPRING_CLOUD_CONFIG_SERVER_GIT_USERNAME: ${SPRING_CLOUD_CONFIG_SERVER_GIT_USERNAME}
+      SPRING_CLOUD_CONFIG_SERVER_GIT_PASSWORD: ${SPRING_CLOUD_CONFIG_SERVER_GIT_PASSWORD}
+      OTEL_SERVICE_NAME: "configserver"
+    healthcheck:
+      test: "curl --fail --silent localhost:8071/actuator/health/readiness | grep UP || exit 1"
+      <<: *eazybank-default-healthcheck-settings
+    <<: *eazybank-default-settings
+
+  eurekaserver:
+    image: "92khsang/eurekaserver:${TAG_NAME}"
+    container_name: eurekaserver-ms
+    ports:
+      - "8070:8070"
+    healthcheck:
+      test: "curl --fail --silent localhost:8070/actuator/health/readiness | grep UP || exit 1"
+      <<: *eazybank-default-healthcheck-settings
+    depends_on:
+      configserver:
+        condition: service_healthy
+    environment:
+      <<: *configserver-dependency-env
+      SPRING_APPLICATION_NAME: "eurekaserver"
+      OTEL_SERVICE_NAME: "eurekaserver"
+    <<: *eazybank-default-settings
+
+  accounts:
+    image: "92khsang/accounts:${TAG_NAME}"
+    container_name: accounts-ms
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: "curl --fail --silent localhost:8080/actuator/health/readiness | grep UP || exit 1"
+      <<: *eazybank-default-healthcheck-settings
+    depends_on:
+      eurekaserver:
+        condition: service_healthy
+    environment:
+      <<: *eurekaserver-dependency-env
+      SPRING_APPLICATION_NAME: "accounts"
+      OTEL_SERVICE_NAME: "accounts"
+    <<: *eazybank-microservices-settings
+
+  loans:
+    image: "92khsang/loans:${TAG_NAME}"
+    container_name: loans-ms
+    ports:
+      - "8090:8090"
+    healthcheck:
+      test: "curl --fail --silent localhost:8090/actuator/health/readiness | grep UP || exit 1"
+      <<: *eazybank-default-healthcheck-settings
+    environment:
+      <<: *eurekaserver-dependency-env
+      SPRING_APPLICATION_NAME: "loans"
+      OTEL_SERVICE_NAME: "loans"
+    <<: *eazybank-microservices-settings
+
+  cards:
+    image: "92khsang/cards:${TAG_NAME}"
+    container_name: cards-ms
+    ports:
+      - "9000:9000"
+    healthcheck:
+      test: "curl --fail --silent localhost:9000/actuator/health/readiness | grep UP || exit 1"
+      <<: *eazybank-default-healthcheck-settings
+    environment:
+      <<: *eurekaserver-dependency-env
+      SPRING_APPLICATION_NAME: "cards"
+      OTEL_SERVICE_NAME: "cards"
+    <<: *eazybank-microservices-settings
+
+  gatewayserver:
+    image: "92khsang/gatewayserver:${TAG_NAME}"
+    container_name: gatewayserver-ms
+    ports:
+      - "8072:8072"
+    depends_on:
+      accounts:
+        condition: service_healthy
+      loans:
+        condition: service_healthy
+      cards:
+        condition: service_healthy
+    environment:
+      <<: *eurekaserver-dependency-env
+      SPRING_APPLICATION_NAME: "gatewayserver"
+      OTEL_SERVICE_NAME: "gatewayserver"
+    <<: *eazybank-default-settings
+
+# Networks
+networks:
+  eazybank:
+    driver: "bridge"
