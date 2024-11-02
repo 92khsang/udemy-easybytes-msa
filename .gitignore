@@ -32,3 +32,5 @@ build/
 
 .env
 **/docker-compose/.data/
+
+.vscode

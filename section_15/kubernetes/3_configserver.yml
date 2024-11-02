@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configserver-deployment
+  labels:
+    app: configserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configserver
+  template:
+    metadata:
+      labels:
+        app: configserver
+    spec:
+      containers:
+      - name: configserver
+        image: 92khsang/configserver:s12
+        ports:
+        - containerPort: 8071
+        env:
+        - name: SPRING_CLOUD_CONFIG_SERVER_GIT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: configserver-github-credentials
+              key: username
+        - name: SPRING_CLOUD_CONFIG_SERVER_GIT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: configserver-github-credentials
+              key: password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: configserver
+spec:
+  selector:
+    app: configserver
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8071
+      targetPort: 8071
