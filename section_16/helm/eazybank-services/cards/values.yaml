@@ -1,0 +1,21 @@
+eazybankCommon:
+  deployment:
+    appName: &appName cards
+    replicaCount: 1
+    containerPort: 9000
+    image:
+      tag: s14
+      repository: "92khsang/cards"
+
+  service:
+    appName: *appName
+    port: 9000
+    targetPort: 9000
+    serviceType: "ClusterIP"
+
+  enabledFeatures:
+    - appname
+    - profile
+    - config
+    - eureka
+    - otel

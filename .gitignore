@@ -34,3 +34,7 @@ build/
 **/docker-compose/.data/
 
 .vscode
+
+.secrets.yaml
+
+**/charts/**
