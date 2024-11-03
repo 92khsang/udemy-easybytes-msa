@@ -1,0 +1,53 @@
+global:
+  imageRegistry: ""
+  activeProfile: "default"
+
+configserver:
+  enabled: true
+  url: configserver:http://configserver:8071/
+
+eurekaserver:
+  enabled: false
+  defaultzone: http://eurekaserver:8070/eureka/
+
+otel:
+  enabled: true
+  javaTool: -javaagent:/app/libs/opentelemetry-javaagent-2.9.0.jar
+  tracesEndpoint: http://tempo:4318/v1/traces
+  metricsExporter: none
+  logsExporter: none
+
+security:
+  enabled: true
+  ouath2:
+    jwkSetUri: http://localhost:7080/realms/master/protocol/openid-connect/certs
+
+kafka:
+  enabled: true
+  url: localhost:9092
+
+image:
+  registry: "docker.io"
+  repository: "92khsang/accounts"
+  tag: s14
+
+resources:
+  enabled: true
+  memory:
+    limits: 700Mi
+
+service:
+  name: accounts
+  replicaCount: 2
+  ports:
+    port: 8082
+    containerPort: 8080
+    targetPort: 8081
+  serviceType: "LoadBalancer"
+  secretEnv:
+    name: my-service-secret
+    keys:
+      - key: SPRING_CLOUD_CONFIG_SERVER_GIT_USERNAME
+        value: username
+      - key: SPRING_CLOUD_CONFIG_SERVER_GIT_PASSWORD
+        value: password

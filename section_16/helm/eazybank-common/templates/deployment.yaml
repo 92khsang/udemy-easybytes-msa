@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "eazybank.deploymentName" .Values.service }}
+  labels:
+    app: {{ .Values.service.name }}
+spec:
+  replicas: {{ .Values.service.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.name }}
+    spec:
+      containers:
+        - name: {{ .Values.service.name }}
+          image: {{ include "eazybank.image" . }}
+          ports:
+            - containerPort: {{ .Values.service.ports.containerPort }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: eazybank-configmap
+
+          # Additional environment variables with defaults
+          env:
+            - name: SPRING_APPLICATION_NAME
+              value: {{ .Values.service.name }}
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ include "eazybank.activeProfile" . }}
+            # Include extra environment variables from secrets if defined
+            {{- if .Values.service.secretEnv }}
+            {{- range .Values.service.secretEnv.keys }}
+            - name: {{ .key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.service.secretEnv.name }}
+                  key: {{ .value | quote }}
+            {{- end }}
+            {{- end }}
+          
+          # Conditionally set resources if defined in common settings
+          {{- if .Values.resources.enabled }}
+          {{- with .Values.resources }}
+          resources:
+            limits:
+              memory: {{ .memory.limits | default "700Mi" }}
+          {{- end }}
+          {{- end }}

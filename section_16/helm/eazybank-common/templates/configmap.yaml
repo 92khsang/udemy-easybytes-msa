@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: eazybank-configmap
+data:
+    {{- if .Values.configserver.enabled }}
+    {{- with .Values.configserver }}
+    SPRING_CONFIG_IMPORT: {{ .url | quote }}
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.eurekaserver.enabled }}
+    {{- with .Values.eurekaserver }}
+    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: {{ .defaultzone | quote }}
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.otel.enabled }}
+    {{- with .Values.otel }}
+    JAVA_TOOL_OPTIONS: {{ .javaTool | quote }}
+    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: {{ .tracesEndpoint | quote }}
+    OTEL_METRICS_EXPORTER: {{ .metricsExporter | default "none" | quote}}
+    OTEL_LOGS_EXPORTER: {{ .logsExporter | default "none" | quote}}
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.security.enabled }}
+    {{- with .Values.security }}
+    SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK: {{ .ouath2.jwkSetUri | quote }}
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.kafka.enabled }}
+    {{- with .Values.kafka }}
+    SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: {{ .url | quote }}
+    {{- end }}
+    {{- end }}
