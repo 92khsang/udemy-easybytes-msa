@@ -1,0 +1,18 @@
+eazybankCommon:
+  deployment:
+    appName: &appName message
+    replicaCount: 1
+    containerPort: 9010
+    image:
+      tag: s14
+      repository: "92khsang/message"
+
+  service:
+    appName: *appName
+    port: 9010
+    targetPort: 9010
+    serviceType: "ClusterIP"
+
+  enabledFeatures:
+    - appname
+    - kafka

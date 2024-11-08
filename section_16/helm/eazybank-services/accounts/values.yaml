@@ -1,0 +1,22 @@
+eazybankCommon:
+  deployment:
+    appName: &appName accounts
+    replicaCount: 1
+    containerPort: 8080
+    image:
+      tag: s14
+      repository: "92khsang/accounts"
+
+  service:
+    appName: *appName
+    port: 8080
+    targetPort: 8080
+    serviceType: "ClusterIP"
+
+  enabledFeatures:
+    - appname
+    - profile
+    - config
+    - eureka
+    - otel
+    - kafka

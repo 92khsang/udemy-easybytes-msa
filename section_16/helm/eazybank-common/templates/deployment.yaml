@@ -1,51 +1,35 @@
+{{- if (include "eazybank.createDeployment" .) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "eazybank.deploymentName" .Values.service }}
+  name: {{ include "eazybank.deploymentName" . }}
   labels:
-    app: {{ .Values.service.name }}
+    app: {{ include "eazybank.labelName" .Values.deployment }}
 spec:
-  replicas: {{ .Values.service.replicaCount | default 1 }}
+  replicas: {{ .Values.deployment.replicaCount | default 1 }}
   selector:
     matchLabels:
-      app: {{ .Values.service.name }}
+      app: {{ include "eazybank.labelName" .Values.deployment }}
   template:
     metadata:
       labels:
-        app: {{ .Values.service.name }}
+        app: {{ include "eazybank.labelName" .Values.deployment }}
     spec:
       containers:
-        - name: {{ .Values.service.name }}
+        - name: {{ .Values.deployment.appName }}
           image: {{ include "eazybank.image" . }}
           ports:
-            - containerPort: {{ .Values.service.ports.containerPort }}
+            - containerPort: {{ .Values.deployment.containerPort }}
               protocol: TCP
-          envFrom:
-            - configMapRef:
-                name: eazybank-configmap
 
           # Additional environment variables with defaults
-          env:
-            - name: SPRING_APPLICATION_NAME
-              value: {{ .Values.service.name }}
-            - name: SPRING_PROFILES_ACTIVE
-              value: {{ include "eazybank.activeProfile" . }}
-            # Include extra environment variables from secrets if defined
-            {{- if .Values.service.secretEnv }}
-            {{- range .Values.service.secretEnv.keys }}
-            - name: {{ .key }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $.Values.service.secretEnv.name }}
-                  key: {{ .value | quote }}
-            {{- end }}
-            {{- end }}
-          
-          # Conditionally set resources if defined in common settings
-          {{- if .Values.resources.enabled }}
-          {{- with .Values.resources }}
-          resources:
-            limits:
-              memory: {{ .memory.limits | default "700Mi" }}
-          {{- end }}
-          {{- end }}
+          env: 
+          {{- include "eazybank.envAppNameSets" . | indent 12 }}
+          {{- if (include "eazybank.createConfigMap" .) }}
+          {{- include "eazybank.envConfigSets" . | indent 12 }}
+          {{- end -}}
+          {{- if (include "eazybank.createSecretEnv" .) }}
+          {{- include "eazybank.envSecretSets" . | indent 12 }}
+          {{- end -}}
+
+{{- end -}}

@@ -1,0 +1,21 @@
+eazybankCommon:
+  deployment:
+    appName: &appName loans
+    replicaCount: 1
+    containerPort: 8090
+    image:
+      tag: s14
+      repository: "92khsang/loans"
+
+  service:
+    appName: *appName
+    port: 8090
+    targetPort: 8090
+    serviceType: "ClusterIP"
+
+  enabledFeatures:
+    - appname
+    - profile
+    - config
+    - eureka
+    - otel
