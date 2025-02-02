@@ -1,0 +1,35 @@
+{{- if (include "eazybank.createDeployment" .) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "eazybank.deploymentName" . }}
+  labels:
+    app: {{ include "eazybank.labelName" .Values.deployment }}
+spec:
+  replicas: {{ .Values.deployment.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ include "eazybank.labelName" .Values.deployment }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "eazybank.labelName" .Values.deployment }}
+    spec:
+      containers:
+        - name: {{ .Values.deployment.appName }}
+          image: {{ include "eazybank.image" . }}
+          ports:
+            - containerPort: {{ .Values.deployment.containerPort }}
+              protocol: TCP
+
+          # Additional environment variables with defaults
+          env: 
+          {{- include "eazybank.envAppNameSets" . | indent 12 }}
+          {{- if (include "eazybank.createConfigMap" .) }}
+          {{- include "eazybank.envConfigSets" . | indent 12 }}
+          {{- end -}}
+          {{- if (include "eazybank.createSecretEnv" .) }}
+          {{- include "eazybank.envSecretSets" . | indent 12 }}
+          {{- end -}}
+
+{{- end -}}

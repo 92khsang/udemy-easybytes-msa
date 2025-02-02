@@ -1,0 +1,19 @@
+eazybankCommon:
+  deployment:
+    appName: &appName eurekaserver
+    replicaCount: 1
+    containerPort: 8070
+    image:
+      tag: s17
+      repository: "92khsang/eurekaserver"
+
+  service:
+    appName: *appName
+    port: 8070
+    targetPort: 8070
+    serviceType: "ClusterIP"
+
+  enabledFeatures:
+    - appname
+    - config
+    - otel

@@ -1,0 +1,22 @@
+eazybankCommon:
+  deployment:
+    appName: &appName gatewayserver
+    replicaCount: 1
+    containerPort: 8072
+    image:
+      tag: s17
+      repository: "92khsang/gatewayserver"
+
+  service:
+    appName: *appName
+    port: 8072
+    targetPort: 8072
+    serviceType: "LoadBalancer"
+
+  enabledFeatures:
+    - appname
+    - profile
+    - config
+    - resouceserver
+    - otel
+    - kubernetesdiscovery

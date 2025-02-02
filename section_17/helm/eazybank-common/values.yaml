@@ -1,0 +1,31 @@
+global:
+  registry: ""
+
+envConfigSets:
+  - feature: profile
+    envName: 
+      - SPRING_PROFILES_ACTIVE
+  - feature: config
+    envName: 
+      - SPRING_CONFIG_IMPORT
+  - feature: kubernetesdiscovery
+    envName: 
+      - SPRING.CLOUD.KUBERNETES.DISCOVERY.DISCOVERY-SERVER-URL
+  - feature: resouceserver
+    envName: 
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI
+  - feature: otel
+    envName:
+      - JAVA_TOOL_OPTIONS
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+      - OTEL_METRICS_EXPORTER
+      - OTEL_LOGS_EXPORTER
+  - feature: kafka
+    envName: 
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS
+
+envAppNameSets:
+  - feature: appname
+    envName: SPRING_APPLICATION_NAME
+  - feature: otel
+    envName: OTEL_SERVICE_NAME

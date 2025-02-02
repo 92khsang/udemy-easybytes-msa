@@ -1,0 +1,32 @@
+secretSet:
+  name:  &configserverSecretsName configserver-secret
+  data:
+    GITHUB_USER: PLACEHOLDER
+    GITHUB_TOKEN: PLACEHOLDER
+
+eazybankCommon:
+  deployment:
+    appName: &appName configserver
+    replicaCount: 1
+    containerPort: 8071
+    image:
+      tag: s17
+      repository: "92khsang/configserver"
+
+  service:
+    appName: *appName
+    port: 8071
+    targetPort: 8071
+    serviceType: "ClusterIP"
+
+  enabledFeatures:
+    - appname
+    - otel
+
+  envSecretSets:
+    - name: *configserverSecretsName
+      entries:
+        - envName: SPRING_CLOUD_CONFIG_SERVER_GIT_USERNAME
+          secretKeyName: GITHUB_USER
+        - envName: SPRING_CLOUD_CONFIG_SERVER_GIT_PASSWORD
+          secretKeyName: GITHUB_TOKEN
